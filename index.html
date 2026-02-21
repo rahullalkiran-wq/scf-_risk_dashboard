@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Vayana SCF — Risk Intelligence</title>
+<title>Vayana SCF Risk Intelligence | Aug 2025 – Jan 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -50,6 +50,7 @@ body{background-image:radial-gradient(ellipse 80% 50% at 10% 0%,rgba(234,179,8,.
 .cpill.live{border-color:rgba(52,211,153,.3);color:var(--grn); background: var(--gg);}.cpill.live .cpulse{background:var(--grn);box-shadow:0 0 10px var(--grn);animation:blink 1.8s ease-in-out infinite}
 .cpill.demo{border-color:rgba(234,179,8,.3);color:var(--gold); background: var(--gold3);}.cpill.demo .cpulse{background:var(--gold)}
 .cpill.err{border-color:rgba(248,113,113,.3);color:var(--red); background: var(--rg);}.cpill.err .cpulse{background:var(--red);animation:blink .5s ease-in-out infinite}
+.cpill.load .cpulse{background:var(--blu);animation:blink .3s linear infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .nbtn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--ff);transition:all .2s;letter-spacing:.2px}
 .btn-gold{background:var(--gold);color:#09090b;box-shadow:0 2px 8px rgba(234,179,8,.2)}.btn-gold:hover{background:#facc15; box-shadow:0 4px 16px rgba(234,179,8,.3);transform:translateY(-1px)}
@@ -63,7 +64,7 @@ body{background-image:radial-gradient(ellipse 80% 50% at 10% 0%,rgba(234,179,8,.
 .fld input,.fld select{width:100%;background:var(--bg);border:1px solid var(--b2);color:var(--tx);border-radius:6px;padding:12px 14px;font-size:13px;font-family:var(--fm);outline:none;transition:all .2s}
 .fld input:focus,.fld select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(234,179,8,.15)}
 .sbox{background:rgba(255,255,255,.02);border:1px solid var(--b1);border-radius:8px;padding:16px}
-.sn{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:6px}
+.sn{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.5px;margin-bottom:6px; font-family:var(--ff);}
 .st{font-size:13px;color:var(--tm);line-height:1.6}
 .st code{background:var(--s2);color:var(--tx);padding:2px 6px;border-radius:4px;font-family:var(--fm);font-size:12px; border: 1px solid var(--b1);}
 .tbox{background:var(--gg);border:1px solid rgba(52,211,153,.2);border-radius:6px;padding:12px;font-family:var(--fm);font-size:12px;color:var(--grn);display:none;margin-top:4px;max-height:150px;overflow-y:auto;line-height:1.6;white-space:pre-wrap}
@@ -260,7 +261,11 @@ tr:last-child td{border-bottom:none}
   <div class="sbox"><div class="sn">STEP 1 — RUN NGROK</div><div class="st">In terminal: <code>docker start n8n</code> then <code>ngrok http 5678</code></div></div>
   <div class="sbox"><div class="sn">STEP 2 — COPY URL</div><div class="st">Copy the <code>https://xxxx.ngrok-free.app</code> URL from the ngrok terminal window.</div></div>
   <div class="sbox"><div class="sn">STEP 3 — ACTIVATE WORKFLOW</div><div class="st">Open <code>localhost:5678</code> → Vayana SCF FIXED v3 → toggle Active ON.</div></div>
-  <div class="fld"><label>N8N Webhook Base URL</label><input type="text" id="cfg-url" placeholder="https://xxxx.ngrok-free.app"/></div>
+  
+  <div class="fld"><label>N8N Webhook Base URL</label>
+    <input type="text" id="cfg-url" value="https://clemently-changeful-krista.ngrok-free.dev" placeholder="https://xxxx.ngrok-free.app"/>
+  </div>
+  
   <div class="fld"><label>Auto-Refresh Interval</label>
     <select id="cfg-ref">
       <option value="300000">Every 5 minutes</option>
@@ -559,7 +564,7 @@ function connectWebhook() {
   if (!url) { alert('Please enter your n8n webhook URL.'); return; }
   wUrl = url;
   refMs = parseInt(document.getElementById('cfg-ref').value);
-  toggleDrawer();
+  document.getElementById('drawer').classList.remove('open');
   showLoad('Connecting to n8n — fetching 6 months…');
   var promises = MONTHS.map(function(ml, i) {
     return fetchMonth(MKEYS[i], ml).then(function(r) {
@@ -583,7 +588,7 @@ function connectWebhook() {
   }).catch(function(e) {
     hideLoad(); setCpill('err', 'FAILED');
     showTbox('❌ ' + e.message + '\n\nCheck:\n1. docker start n8n\n2. ngrok http 5678 (running)\n3. Workflow is Active in n8n\n4. URL is correct', true);
-    toggleDrawer();
+    document.getElementById('drawer').classList.add('open');
   });
 }
 
@@ -622,7 +627,8 @@ function useDemo() {
   document.getElementById('foot-src').textContent = 'Demo mode';
   document.getElementById('foot-src').style.color = 'var(--amb)';
   if (refTimer) clearInterval(refTimer);
-  toggleDrawer(); rebuildPills(); applyF();
+  document.getElementById('drawer').classList.remove('open');
+  rebuildPills(); applyF();
 }
 
 function manualRefresh() {
@@ -996,9 +1002,15 @@ setInterval(function() {
   document.getElementById('clk').textContent = new Date().toLocaleTimeString('en-IN', {timeZone:'Asia/Kolkata'});
 }, 1000);
 
-// BOOT
-rebuildPills();
-applyF();
+// ═══════════════════════════════════════════════════
+// BOOT SEQUENCE
+// ═══════════════════════════════════════════════════
+if (document.getElementById('cfg-url').value.trim() !== '') {
+  connectWebhook();
+} else {
+  rebuildPills();
+  applyF();
+}
 </script>
 </body>
 </html>
